@@ -38,6 +38,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -55,7 +56,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.core.net.toUri
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.draw.scale
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material3.ripple
 import app.textpilot.AppSelectorActivity
 import app.textpilot.WelcomeActivity
 import app.textpilot.data.SuggestionPresentationType
@@ -91,21 +100,23 @@ fun ModernSettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            .animateContentSize() // Add smooth transition
     ) {
         // 1. Service Section
         Text(
             text = "SERVICE",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 24.dp, top = 24.dp, bottom = 8.dp)
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 28.dp, top = 32.dp, bottom = 12.dp)
         )
         
         Card(
             modifier = Modifier.padding(horizontal = 16.dp),
-            shape = MaterialTheme.shapes.extraLarge, // Rounded iOS style
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            shape = MaterialTheme.shapes.extraLarge, 
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
         ) {
-            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 // Enable Switch
                 Row(
                     modifier = Modifier
@@ -125,23 +136,42 @@ fun ModernSettingsScreen(
                     Switch(
                         checked = uiState.masterSwitchEnabled,
                         onCheckedChange = { enabled ->
-                            val intent = Intent(context, WelcomeActivity::class.java)
-                            intent.putExtra("page", if (enabled) 1 else 3)
-                            context.startActivity(intent)
-                        }
+                            try {
+                                val intent = Intent(context, WelcomeActivity::class.java)
+                                intent.putExtra("page", if (enabled) 1 else 3)
+                                context.startActivity(intent)
+                            } catch (e: Exception) { e.printStackTrace() }
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                            uncheckedThumbColor = Color(0xFF8E918F), // More visible grey
+                            uncheckedTrackColor = Color(0xFF383838)  // Dark but visible track
+                        )
                     )
                 }
                 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 
                 // Select Apps
+                val appsInteractionSource = remember { MutableInteractionSource() }
+                val appsPressed by appsInteractionSource.collectIsPressedAsState()
+                val appsScale by animateFloatAsState(if (appsPressed) 0.96f else 1f)
+                
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            val intent = Intent(context, AppSelectorActivity::class.java)
-                            context.startActivity(intent)
-                        }
+                        .scale(appsScale)
+                        .clickable(
+                            interactionSource = appsInteractionSource,
+                            indication = ripple(),
+                            onClick = {
+                                try {
+                                    val intent = Intent(context, AppSelectorActivity::class.java)
+                                    context.startActivity(intent)
+                                } catch (e: Exception) { e.printStackTrace() }
+                            }
+                        )
                         .padding(vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -164,14 +194,25 @@ fun ModernSettingsScreen(
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outlineVariant)
 
                 // Rewatch Intro
+                val introInteractionSource = remember { MutableInteractionSource() }
+                val introPressed by introInteractionSource.collectIsPressedAsState()
+                val introScale by animateFloatAsState(if (introPressed) 0.96f else 1f)
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            val intent = Intent(context, WelcomeActivity::class.java)
-                            intent.putExtra("page", 0)
-                            context.startActivity(intent)
-                        }
+                        .scale(introScale)
+                        .clickable(
+                            interactionSource = introInteractionSource,
+                            indication = ripple(),
+                            onClick = {
+                                try {
+                                    val intent = Intent(context, WelcomeActivity::class.java)
+                                    intent.putExtra("page", 0)
+                                    context.startActivity(intent)
+                                } catch (e: Exception) { e.printStackTrace() }
+                            }
+                        )
                         .padding(vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -196,17 +237,18 @@ fun ModernSettingsScreen(
         // 2. Preferences Section
         Text(
             text = "PREFERENCES",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 24.dp, top = 24.dp, bottom = 8.dp)
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 28.dp, top = 32.dp, bottom = 12.dp)
         )
         
         Card(
             modifier = Modifier.padding(horizontal = 16.dp),
             shape = MaterialTheme.shapes.extraLarge,
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
         ) {
-            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 // Suggestion Mode
                 Box(modifier = Modifier.padding(vertical = 12.dp)) {
                     ExposedDropdownMenuBox(
@@ -218,10 +260,16 @@ fun ModernSettingsScreen(
                             value = suggestionPresentationTypeStrings[uiState.suggestionPresentationType.ordinal],
                             readOnly = true,
                             onValueChange = {},
-                            label = { Text("Visual Mode") },
+                            label = { Text("Visual Mode", color = MaterialTheme.colorScheme.primary) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandMenu) },
-                            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryEditable, true),
-                            shape = MaterialTheme.shapes.large
+                            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
+                            shape = MaterialTheme.shapes.extraLarge,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
+                            )
                         )
                         ExposedDropdownMenu(
                             expanded = expandMenu,
@@ -231,7 +279,7 @@ fun ModernSettingsScreen(
                                 DropdownMenuItem(
                                     text = { Text(selectionOption) },
                                     onClick = {
-                                        viewModel.updateSuggestionPresentationType(SuggestionPresentationType.fromInt(index))
+                                        viewModel.onSuggestionPresentationTypeChange(SuggestionPresentationType.entries[index])
                                         expandMenu = false
                                     }
                                 )
@@ -243,10 +291,19 @@ fun ModernSettingsScreen(
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 
                 // Show Errors
+                val debugInteractionSource = remember { MutableInteractionSource() }
+                val debugPressed by debugInteractionSource.collectIsPressedAsState()
+                val debugScale by animateFloatAsState(if (debugPressed) 0.98f else 1f)
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { viewModel.updateShowErrors(!uiState.showErrors) }
+                        .scale(debugScale)
+                        .clickable(
+                            interactionSource = debugInteractionSource,
+                            indication = ripple(),
+                            onClick = { viewModel.updateShowErrors(!uiState.showErrors) }
+                        )
                         .padding(vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -472,6 +529,10 @@ fun HostedApiSettingsSection(viewModel: SettingsViewModel) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
+                val buttonInteractionSource = remember { MutableInteractionSource() }
+                val buttonPressed by buttonInteractionSource.collectIsPressedAsState()
+                val buttonScale by animateFloatAsState(if (buttonPressed) 0.95f else 1f)
+
                 Button(
                     onClick = {
                         val uri = "https://coreply.up.nadles.com/".toUri()
@@ -480,7 +541,10 @@ fun HostedApiSettingsSection(viewModel: SettingsViewModel) {
                     },
                     modifier = Modifier
                         .fillMaxWidth()
+                        .scale(buttonScale)
                         .padding(top = 16.dp),
+                    interactionSource = buttonInteractionSource,
+                    shape = MaterialTheme.shapes.extraLarge
                 ) {
                     Text(if (uiState.hostedApiKey.isNotEmpty()) "Manage Access Keys" else "Get Your Access Key")
                 }
@@ -508,15 +572,23 @@ fun AboutSection() {
         )
 
         // GitHub Link
+        val githubInteractionSource = remember { MutableInteractionSource() }
+        val githubPressed by githubInteractionSource.collectIsPressedAsState()
+        val githubScale by animateFloatAsState(if (githubPressed) 0.97f else 1f)
+
         Surface (
             onClick = {
-                val uri = Uri.parse("https://github.com/coreply/coreply")
+                val uri = Uri.parse("https://github.com/suittechnologies-create/suit-textpilot")
                 val intent = Intent(Intent.ACTION_VIEW, uri)
                 context.startActivity(intent)
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp)
+                .scale(githubScale)
+                .padding(bottom = 8.dp),
+            interactionSource = githubInteractionSource,
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainer
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
@@ -535,25 +607,23 @@ fun AboutSection() {
         }
 
         // Instagram Link
+        val instaInteractionSource = remember { MutableInteractionSource() }
+        val instaPressed by instaInteractionSource.collectIsPressedAsState()
+        val instaScale by animateFloatAsState(if (instaPressed) 0.97f else 1f)
+
         Surface(
             onClick = {
-                val uri = Uri.parse("https://instagram.com/_u/coreply.app")
+                val uri = Uri.parse("https://instagram.com/textpilot.app") // Update placeholder
                 val intent = Intent(Intent.ACTION_VIEW, uri)
-                intent.setPackage("com.instagram.android")
-                try {
-                    context.startActivity(intent)
-                } catch (e: ActivityNotFoundException) {
-                    context.startActivity(
-                        Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("https://instagram.com/coreply.app")
-                        )
-                    )
-                }
+                context.startActivity(intent)
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp)
+                .scale(instaScale)
+                .padding(bottom = 8.dp),
+            interactionSource = instaInteractionSource,
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainer
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),

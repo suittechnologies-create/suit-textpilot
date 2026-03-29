@@ -17,12 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import app.textpilot.theme.CoreplyTheme
 import app.textpilot.data.PreferencesManager
 import kotlinx.coroutines.delay
@@ -35,17 +33,20 @@ class SplashActivity : ComponentActivity() {
         setContent {
             CoreplyTheme {
                 SplashScreen {
+                    // Yahan se navigation handle ho rahi hai
+                    val prefs = PreferencesManager.getInstance(this@SplashActivity)
                     lifecycleScope.launch {
-                        val prefs = PreferencesManager.getInstance(this@SplashActivity)
                         prefs.loadPreferences()
-                        
-                        if (prefs.onboardingCompletedState.value) {
-                            startActivity(Intent(this@SplashActivity, SettingsActivity::class.java))
+                        delay(500) // Small buffer for safety
+
+                        val intent = if (prefs.onboardingCompletedState.value) {
+                            Intent(this@SplashActivity, SettingsActivity::class.java)
                         } else {
-                            val intent = Intent(this@SplashActivity, WelcomeActivity::class.java)
-                            intent.putExtra("page", 0)
-                            startActivity(intent)
+                            Intent(this@SplashActivity, WelcomeActivity::class.java).apply {
+                                putExtra("page", 0)
+                            }
                         }
+                        startActivity(intent)
                         finish()
                     }
                 }
@@ -60,7 +61,6 @@ fun SplashScreen(onTimeout: () -> Unit) {
     val alpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        // Simpler implementation for robust animation
         launch {
             scale.animateTo(
                 targetValue = 1f,
@@ -76,51 +76,39 @@ fun SplashScreen(onTimeout: () -> Unit) {
                 animationSpec = tween(1000)
             )
         }
-        
-        delay(2500) // Splash duration
+
+        delay(2500)
         onTimeout()
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF00A3FF), // Electric Blue from logo
-                        Color(0xFF7D26CD)  // Vibrant Purple from logo
-                    )
-                )
-            ),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // FIX: R.mipmap.ic_launcher ko hata kar default icon lagaya hai crash rokne ke liye
             Image(
-                painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                // ".png" hata dein aur "android." bhi hata dein
+                painter = painterResource(id = R.drawable.app_logo),
                 contentDescription = "Logo",
                 modifier = Modifier
-                    .size(150.dp)
+                    .size(140.dp)
                     .scale(scale.value)
                     .alpha(alpha.value)
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             Text(
                 text = "Text Pilot",
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Black,
-                color = Color.White,
-                modifier = Modifier.alpha(alpha.value)
-            )
-            
-            Text(
-                text = "Magic in every reply",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.8f),
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.alpha(alpha.value)
             )
         }

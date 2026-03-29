@@ -24,8 +24,9 @@ import android.content.Intent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.IconButton
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.size
 
 /**
  * Created on 12/24/16.
@@ -45,19 +46,29 @@ class SettingsActivity : ComponentActivity() {
                     topBar = {
                         TopAppBar(
                             scrollBehavior = scrollBehavior,
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.background,
+                                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                                actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
                             navigationIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
-                                    contentDescription = "App Icon",
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
+                                androidx.compose.foundation.layout.Box(modifier = Modifier.padding(start = 12.dp, end = 8.dp)) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.app_logo),
+                                        contentDescription = "App Icon",
+                                        modifier = Modifier.size(32.dp),
+                                        tint = Color.Unspecified
+                                    )
+                                }
                             },
                             title = {
-                                ComposeText("Text Pilot", maxLines = 1,fontWeight = FontWeight.Black,)
+                                ComposeText("Text Pilot", maxLines = 1, fontWeight = FontWeight.Black)
                             },
                             actions = {
                                 IconButton(onClick = {
-                                    val intent = Intent(this@SettingsActivity, AboutActivity::class.java)
+                                    val intent = Intent(this@SettingsActivity, WelcomeActivity::class.java)
+                                    intent.putExtra("page", 0) // Show onboarding/help
                                     startActivity(intent)
                                 }) {
                                     Icon(

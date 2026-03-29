@@ -17,11 +17,7 @@ import androidx.preference.PreferenceManager
 import app.textpilot.applistener.SupportedApps
 import kotlinx.coroutines.flow.firstOrNull
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-    name = "settings",
-    produceMigrations = { context ->
-        listOf(SharedPreferencesMigration({ PreferenceManager.getDefaultSharedPreferences(context) }))
-    })
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 class PreferencesManager private constructor(private val dataStore: DataStore<Preferences>) {
 

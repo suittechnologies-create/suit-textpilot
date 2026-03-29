@@ -120,7 +120,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun updateSuggestionPresentationType(type: SuggestionPresentationType) {
+    fun onSuggestionPresentationTypeChange(type: SuggestionPresentationType) {
         uiState = uiState.copy(suggestionPresentationType = type)
         viewModelScope.launch {
             preferencesManager.updateSuggestionPresentationType(type)

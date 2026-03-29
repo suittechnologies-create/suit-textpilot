@@ -122,19 +122,11 @@ fun WelcomeScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background // AMOLED Black
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF7B2CBF),
-                            Color(0xFF0077B6).copy(alpha = 0.4f),
-                            Color.White
-                        )
-                    )
-                )
                 .padding(innerPadding)
         ) {
             Column(
@@ -334,12 +326,12 @@ fun PageIndicator(
             val isSelected = index == currentPage
             Box(
                 modifier = Modifier
-                    .width(if (isSelected) 24.dp else 8.dp)
-                    .height(8.dp)
+                    .width(if (isSelected) 32.dp else 8.dp)
+                    .height(6.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isSelected) Color.White 
-                        else Color.White.copy(alpha = 0.4f)
+                        if (isSelected) MaterialTheme.colorScheme.primary 
+                        else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
                     )
             )
         }
@@ -358,8 +350,8 @@ private fun ColumnScope.OnboardingContent(
     Surface(
         modifier = Modifier.size(160.dp),
         shape = CircleShape,
-        color = Color.White.copy(alpha = 0.2f),
-        border = BorderStroke(2.dp, Color.White.copy(alpha = 0.3f))
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(text = emoji, style = MaterialTheme.typography.displayLarge)
@@ -371,29 +363,29 @@ private fun ColumnScope.OnboardingContent(
         style = MaterialTheme.typography.displaySmall,
         fontWeight = FontWeight.Black,
         textAlign = TextAlign.Center,
-        color = if (title == "Text Pilot") Color.White else MaterialTheme.colorScheme.onSurface
+        color = MaterialTheme.colorScheme.onBackground
     )
     Spacer(modifier = Modifier.height(16.dp))
     Text(
         text = description,
         style = MaterialTheme.typography.titleMedium,
         textAlign = TextAlign.Center,
-        color = if (title == "Text Pilot") Color.White.copy(alpha = 0.9f) else MaterialTheme.colorScheme.onSurfaceVariant,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         lineHeight = 28.sp,
         modifier = Modifier.padding(horizontal = 24.dp)
     )
     Spacer(modifier = Modifier.weight(1f))
     Button(
         onClick = onNext,
-        modifier = Modifier.fillMaxWidth().height(64.dp),
+        modifier = Modifier.fillMaxWidth().height(60.dp),
         shape = MaterialTheme.shapes.extraLarge,
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (title == "Text Pilot") Color.White else MaterialTheme.colorScheme.primary,
-            contentColor = if (title == "Text Pilot") Color(0xFF7B2CBF) else Color.White
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
         ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {
-        Text(buttonText, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
+        Text(buttonText, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
     }
     Spacer(modifier = Modifier.height(16.dp))
 }
